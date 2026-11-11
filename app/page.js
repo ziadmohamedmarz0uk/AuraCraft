@@ -3,36 +3,62 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles,
   Copy,
   Check,
   RefreshCw,
   Palette,
   Type,
-  Compass,
-  Zap,
-  ArrowRight,
-  ShieldCheck,
-  Code,
   Layout,
   Briefcase,
-  CheckCircle2,
-  Wand2,
-  Bookmark,
+  Code,
+  SlidersHorizontal,
   ChevronDown,
   ChevronUp,
-  Share2,
-  SlidersHorizontal,
+  ArrowRight,
+  Bookmark,
+  Layers,
+  Terminal,
+  FileCode2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const PRESET_IDEAS = [
-  { label: '🎮 Cyberpunk Studio', prompt: 'A futuristic game development studio specializing in dark cyberpunk RPGs with neon aesthetics.', industry: 'Gaming & Web3', style: 'Cyberpunk Neon' },
-  { label: '🌿 Luxury Eco Spa', prompt: 'A sustainable luxury skincare and wellness brand using organic botanical extractions.', industry: 'Beauty & Wellness', style: 'Minimalist Organic' },
-  { label: '⚡ Web3 Fintech', prompt: 'A zero-fee decentralized finance protocol offering instant global cross-border payments.', industry: 'Fintech', style: 'Ultra Modern Tech' },
-  { label: '☕ Artisan Coffee', prompt: 'A specialty cold brew coffee roaster sourced from high-altitude Ethiopian micro-farms.', industry: 'Food & Beverage', style: 'Warm Craft' },
-  { label: '🤖 AI Developer Agent', prompt: 'An autonomous AI assistant helping engineers write zero-bug production code.', industry: 'Tech & AI', style: 'Futuristic Minimal' },
-  { label: '✨ Haute Fashion', prompt: 'An avant-garde luxury fashion label blending 3D printed garments with vintage textiles.', industry: 'Fashion & Luxury', style: 'Neo-Brutalist' },
+  {
+    label: 'Cyberpunk Studio',
+    prompt: 'A futuristic game development studio specializing in dark cyberpunk RPGs with neon aesthetics.',
+    industry: 'Gaming & Web3',
+    style: 'Cyberpunk Neon',
+  },
+  {
+    label: 'Luxury Eco Spa',
+    prompt: 'A sustainable luxury skincare and wellness brand using organic botanical extractions.',
+    industry: 'Beauty & Wellness',
+    style: 'Minimalist Organic',
+  },
+  {
+    label: 'Web3 Protocol',
+    prompt: 'A zero-fee decentralized finance protocol offering instant global cross-border payments.',
+    industry: 'Fintech',
+    style: 'Ultra Modern Tech',
+  },
+  {
+    label: 'Artisan Roaster',
+    prompt: 'A specialty cold brew coffee roaster sourced from high-altitude Ethiopian micro-farms.',
+    industry: 'Food & Beverage',
+    style: 'Warm Craft',
+  },
+  {
+    label: 'AI Developer Agent',
+    prompt: 'An autonomous AI assistant helping engineers write zero-bug production code.',
+    industry: 'Tech & AI',
+    style: 'Futuristic Minimal',
+  },
+  {
+    label: 'Haute Fashion',
+    prompt: 'An avant-garde luxury fashion label blending 3D printed garments with vintage textiles.',
+    industry: 'Fashion & Luxury',
+    style: 'Neo-Brutalist',
+  },
 ];
 
 const INDUSTRY_CHIPS = [
@@ -59,9 +85,27 @@ const LOADING_STEPS = [
   'Analyzing Brand Concept...',
   'Synthesizing 5-Tone Color Hierarchy...',
   'Curating Google Font Pairings...',
-  'Designing Logo Mark Concept...',
+  'Architecting Mark Directive...',
   'Finalizing Brand Identity Kit...',
 ];
+
+const COLOR_ROLES = [
+  'Tone 01 — Dominant Primary',
+  'Tone 02 — Secondary Brand',
+  'Tone 03 — Vibrant Accent',
+  'Tone 04 — Dark Neutral',
+  'Tone 05 — Light Surface',
+];
+
+function hexToRgb(hex) {
+  if (!hex || typeof hex !== 'string') return '';
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return hex;
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  return `rgb(${r}, ${g}, ${b})`;
+}
 
 export default function Home() {
   const [prompt, setPrompt] = useState('');
@@ -76,17 +120,28 @@ export default function Home() {
   const [copiedNotification, setCopiedNotification] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [emblemShape, setEmblemShape] = useState('rounded'); // 'rounded' | 'circle' | 'diamond'
+  const [exportFormat, setExportFormat] = useState('tailwind'); // 'tailwind' | 'css' | 'json'
 
   // Dynamically load Google Fonts when result changes
   useEffect(() => {
     if (result?.fontPairing) {
-      const headingFont = typeof result.fontPairing === 'object' ? result.fontPairing.heading : result.fontPairing;
-      const bodyFont = typeof result.fontPairing === 'object' ? result.fontPairing.body : 'Inter';
-      
-      const fontFamilies = [headingFont, bodyFont].filter(Boolean).map(f => f.replace(/\s+/g, '+')).join('&family=');
+      const headingFont =
+        typeof result.fontPairing === 'object'
+          ? result.fontPairing.heading
+          : result.fontPairing;
+      const bodyFont =
+        typeof result.fontPairing === 'object'
+          ? result.fontPairing.body
+          : 'Inter';
+
+      const fontFamilies = [headingFont, bodyFont]
+        .filter(Boolean)
+        .map((f) => f.replace(/\s+/g, '+'))
+        .join('&family=');
+
       if (fontFamilies) {
         const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@400;600;700;800;900&display=swap`;
+        link.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@400;500;600;700;800;900&display=swap`;
         link.rel = 'stylesheet';
         document.head.appendChild(link);
       }
@@ -132,13 +187,13 @@ export default function Home() {
 
       setResult(data);
 
-      // Trigger celebratory confetti on successful generation
+      // Trigger celebratory confetti with brand colors
       try {
         confetti({
-          particleCount: 80,
-          spread: 70,
+          particleCount: 60,
+          spread: 60,
           origin: { y: 0.6 },
-          colors: data.colors?.map((c) => c.hex) || ['#a855f7', '#06b6d4', '#10b981'],
+          colors: data.colors?.map((c) => c.hex) || ['#2563EB', '#111111', '#E5E5E5'],
         });
       } catch (e) {
         // Confetti fallback
@@ -166,19 +221,48 @@ export default function Home() {
     if (!res || !res.colors) return '';
     const colorObj = {};
     res.colors.forEach((c, idx) => {
-      colorObj[`brand-${idx + 1}`] = c.hex;
+      const key = `tone-${idx + 1}`;
+      colorObj[key] = c.hex;
     });
-    return `// tailwind.config.js\nmodule.exports = {\n  theme: {\n    extend: {\n      colors: ${JSON.stringify(colorObj, null, 8)}\n    }\n  }\n}`;
+    const heading =
+      typeof res.fontPairing === 'object'
+        ? res.fontPairing.heading
+        : res.fontPairing;
+    const body =
+      typeof res.fontPairing === 'object'
+        ? res.fontPairing.body
+        : 'Inter';
+
+    return `// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        brand: ${JSON.stringify(colorObj, null, 8)}
+      },
+      fontFamily: {
+        heading: ['${heading}', 'sans-serif'],
+        body: ['${body}', 'sans-serif'],
+      }
+    }
+  }
+};`;
   };
 
   const getCssVarsSnippet = (res) => {
     if (!res || !res.colors) return '';
     let vars = ':root {\n';
     res.colors.forEach((c, idx) => {
-      vars += `  --color-brand-${idx + 1}: ${c.hex}; /* ${c.name} */\n`;
+      vars += `  --color-tone-${idx + 1}: ${c.hex}; /* ${c.name} */\n`;
     });
-    const heading = typeof res.fontPairing === 'object' ? res.fontPairing.heading : res.fontPairing;
-    const body = typeof res.fontPairing === 'object' ? res.fontPairing.body : 'Inter';
+    const heading =
+      typeof res.fontPairing === 'object'
+        ? res.fontPairing.heading
+        : res.fontPairing;
+    const body =
+      typeof res.fontPairing === 'object'
+        ? res.fontPairing.body
+        : 'Inter';
     vars += `  --font-heading: '${heading}', sans-serif;\n`;
     vars += `  --font-body: '${body}', sans-serif;\n`;
     vars += '}';
@@ -189,7 +273,7 @@ export default function Home() {
     ? typeof result.fontPairing === 'object'
       ? result.fontPairing.heading
       : result.fontPairing
-    : 'Outfit';
+    : 'Plus Jakarta Sans';
 
   const bodyFontFamily = result?.fontPairing
     ? typeof result.fontPairing === 'object'
@@ -198,68 +282,65 @@ export default function Home() {
     : 'Inter';
 
   return (
-    <div className="min-h-screen flex flex-col justify-between relative overflow-x-hidden bg-[#05070d] text-slate-100 selection:bg-purple-600">
-      {/* Background Radial Ambient Glow */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="ambient-glow -top-32 -left-32 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] bg-purple-600/15" />
-        <div className="ambient-glow top-1/3 -right-32 w-[400px] sm:w-[700px] h-[400px] sm:h-[700px] bg-cyan-500/10" />
-        <div className="ambient-glow -bottom-32 left-1/3 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] bg-indigo-600/15" />
-      </div>
-
-      {/* Floating Notifications */}
+    <div className="min-h-screen flex flex-col justify-between bg-[#0A0A0A] text-[#EDEDED] font-sans">
+      {/* Precision Toast Notifications (Raycast / Linear style) */}
       <AnimatePresence>
         {copiedHex && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900/95 border border-purple-500/50 text-white shadow-2xl backdrop-blur-2xl"
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-[#141414] border border-[#262626] text-white shadow-2xl"
           >
-            <div className="w-5 h-5 rounded-full flex items-center justify-center bg-purple-500 text-white shadow">
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+            <div className="w-4 h-4 rounded-full flex items-center justify-center bg-blue-600 text-white shrink-0">
+              <Check className="w-2.5 h-2.5 stroke-[3]" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-slate-200">Color Hex Copied!</p>
-              <p className="text-xs text-purple-300 font-mono font-semibold">{copiedHex}</p>
+            <div className="text-left">
+              <span className="text-xs font-medium text-neutral-200 block">Hex code copied</span>
+              <span className="text-[11px] font-mono text-neutral-400 block">{copiedHex}</span>
             </div>
           </motion.div>
         )}
 
         {copiedNotification && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900/95 border border-emerald-500/50 text-white shadow-2xl backdrop-blur-2xl"
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-[#141414] border border-[#262626] text-white shadow-2xl"
           >
-            <div className="w-5 h-5 rounded-full flex items-center justify-center bg-emerald-500 text-white shadow">
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+            <div className="w-4 h-4 rounded-full flex items-center justify-center bg-blue-600 text-white shrink-0">
+              <Check className="w-2.5 h-2.5 stroke-[3]" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-slate-200">{copiedNotification}</p>
-              <p className="text-[11px] text-emerald-300">Ready for use</p>
+            <div className="text-left">
+              <span className="text-xs font-medium text-neutral-200 block">{copiedNotification}</span>
+              <span className="text-[11px] font-mono text-neutral-400 block">Ready for production</span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Clean Mobile-First Top Header */}
-      <header className="border-b border-white/10 bg-[#070a12]/90 backdrop-blur-2xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-cyan-400 p-0.5 shadow-lg shadow-purple-500/20 shrink-0">
-              <div className="w-full h-full bg-[#080c16] rounded-[10px] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+      {/* Editorial Studio Top Navigation */}
+      <header className="border-b border-[#262626] bg-[#0A0A0A]/95 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Minimalist Geometric Studio Mark */}
+            <div className="w-7 h-7 rounded-md bg-[#161616] border border-[#262626] flex items-center justify-center shrink-0">
+              <div className="w-3.5 h-3.5 border-2 border-neutral-300 rounded-[2px] flex items-center justify-center">
+                <div className="w-1 h-1 bg-blue-500 rounded-[0.5px]" />
               </div>
             </div>
-            <div>
-              <h1 className="text-base font-extrabold tracking-tight font-heading text-white flex items-center gap-1.5">
+
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-semibold tracking-tight text-white font-heading">
                 AuraCraft
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                  v2.0
-                </span>
               </h1>
-              <p className="text-[10px] text-slate-400 hidden sm:block">AI Brand Identity Studio</p>
+              <span className="text-[10px] font-mono tracking-tight px-1.5 py-0.5 rounded border border-[#262626] bg-[#161616] text-neutral-400">
+                v2.0
+              </span>
+              <span className="text-xs text-neutral-500 hidden sm:inline-block">/ Studio Pro</span>
             </div>
           </div>
 
@@ -270,65 +351,71 @@ export default function Home() {
                 setResult(null);
                 setError(null);
               }}
-              className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center gap-1.5"
+              className="px-2.5 py-1.5 rounded-md bg-[#141414] border border-[#262626] text-xs font-medium text-neutral-400 hover:text-white hover:border-[#383838] transition-colors flex items-center gap-1.5"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-purple-400" />
+              <RefreshCw className="w-3 h-3 text-neutral-400" />
               <span>Reset</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex-grow w-full z-10 relative">
-        {/* Mobile Hero Header */}
-        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-500/40 text-purple-300 text-[11px] font-semibold mb-3 backdrop-blur-xl">
-            <Wand2 className="w-3 h-3 text-cyan-400" />
-            <span>AI Brand Identity Generator</span>
+      {/* Main Workspace */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex-grow w-full">
+        {/* Editorial Headline Section (No AI Glows, No Gradient Text) */}
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#141414] border border-[#262626] text-[11px] font-mono text-neutral-400 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span>SYSTEM // GENERATIVE BRAND ARCHITECTURE</span>
           </div>
 
-          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black font-heading text-white tracking-tight leading-tight mb-2">
-            Create Iconic <span className="text-gradient-primary">Visual Brands</span>
+          <h2 className="text-3xl sm:text-5xl font-bold font-heading text-[#FAFAFA] tracking-tight leading-tight mb-3">
+            Create Iconic Visual Brands
           </h2>
 
-          <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-md mx-auto">
-            Describe your business concept below to instantly generate colors, typography, logos, and brand guidelines.
+          <p className="text-neutral-400 text-sm sm:text-base leading-relaxed max-w-lg mx-auto font-normal">
+            Synthesize cohesive 5-tone color hierarchies, curated Google Font pairings, and vector mark directives for modern ventures.
           </p>
         </div>
 
-        {/* SIMPLIFIED MOBILE-FIRST FORM */}
+        {/* Central Input Card (Generous Whitespace, 1px Hairline Borders, Zero Rainbow Glows) */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto mb-10"
+          transition={{ duration: 0.2 }}
+          className="max-w-2xl mx-auto mb-12"
         >
-          <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-7 border border-white/10 relative overflow-hidden shadow-2xl space-y-4">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400" />
-
-            {/* Step 1: Concept Input Area */}
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+            {/* Input Header & Textarea */}
             <div>
-              <label htmlFor="brand-prompt" className="block text-xs font-bold text-slate-200 mb-2 flex items-center justify-between">
-                <span>Business Concept or Idea</span>
-                <span className="text-[10px] text-purple-400 font-mono">Step 1 of 2</span>
-              </label>
+              <div className="flex items-center justify-between mb-2.5">
+                <label
+                  htmlFor="brand-prompt"
+                  className="text-xs font-medium text-neutral-200"
+                >
+                  Business Concept or Venture Description
+                </label>
+                <span className="text-[11px] font-mono text-neutral-500">
+                  Step 1 of 2
+                </span>
+              </div>
               <textarea
                 id="brand-prompt"
                 rows={3}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g. A futuristic game development studio specializing in dark cyberpunk RPGs with neon aesthetics..."
-                className="w-full glass-input rounded-xl p-3.5 text-slate-100 placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition-all resize-none leading-relaxed font-sans"
+                placeholder="e.g. A minimalist architecture studio focused on brutalist concrete structures and sustainable mass timber..."
+                className="w-full bg-[#0E0E0E] border border-[#262626] rounded-lg p-3.5 text-neutral-100 placeholder-neutral-500 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all resize-none leading-relaxed font-sans"
                 required
               />
             </div>
 
-            {/* Quick Inspiration Preset Chips */}
+            {/* Flat Minimal Inspiration Chips (No Heavy Emojis) */}
             <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                💡 Quick Inspiration Ideas:
+              <span className="block text-[10px] font-mono font-medium text-neutral-400 uppercase tracking-wider mb-2.5">
+                Quick Inspiration Ideas
               </span>
-              <div className="flex overflow-x-auto pb-1.5 scrollbar-none gap-2">
+              <div className="flex flex-wrap gap-2">
                 {PRESET_IDEAS.map((item, idx) => (
                   <button
                     key={idx}
@@ -339,7 +426,7 @@ export default function Home() {
                       setStyle(item.style);
                       handleGenerate(item.prompt);
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-medium text-slate-300 hover:text-purple-300 hover:border-purple-500/40 whitespace-nowrap shrink-0 transition-all"
+                    className="px-3 py-1.5 rounded-md bg-[#181818] border border-[#262626] text-xs font-normal text-neutral-300 hover:text-white hover:border-[#383838] hover:bg-[#1E1E1E] transition-all"
                   >
                     {item.label}
                   </button>
@@ -347,21 +434,25 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Collapsible Advanced Style Filters */}
-            <div className="pt-1">
+            {/* Collapsible Advanced Style & Industry Filters */}
+            <div className="border-t border-[#202020] pt-4">
               <button
                 type="button"
                 onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                className="w-full py-2 px-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-semibold text-slate-400 hover:text-slate-200 flex items-center justify-between transition-all"
+                className="w-full py-2 px-3 rounded-md bg-[#181818] border border-[#262626] text-xs font-medium text-neutral-400 hover:text-neutral-200 flex items-center justify-between transition-colors"
               >
-                <span className="flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Optional Style & Industry Filters</span>
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Optional Constraints (Industry & Aesthetic)</span>
                   {(industry || style) && (
-                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                   )}
                 </span>
-                {showAdvancedOptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showAdvancedOptions ? (
+                  <ChevronUp className="w-4 h-4 text-neutral-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-neutral-400" />
+                )}
               </button>
 
               <AnimatePresence>
@@ -370,21 +461,24 @@ export default function Home() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-4 pt-3 overflow-hidden"
+                    transition={{ duration: 0.15 }}
+                    className="space-y-4 pt-4 overflow-hidden"
                   >
                     {/* Industry Chips */}
                     <div>
-                      <span className="block text-[10px] font-semibold text-slate-400 uppercase mb-1.5">Target Industry:</span>
-                      <div className="flex overflow-x-auto pb-1 scrollbar-none gap-1.5">
+                      <span className="block text-[11px] font-mono text-neutral-400 uppercase tracking-tight mb-2">
+                        Industry Sector:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
                         {INDUSTRY_CHIPS.map((ind, idx) => (
                           <button
                             key={idx}
                             type="button"
                             onClick={() => setIndustry(ind)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                            className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                               industry === ind || (ind === 'All Industries' && !industry)
-                                ? 'bg-purple-600 text-white font-semibold'
-                                : 'bg-slate-900 border border-slate-800 text-slate-400'
+                                ? 'bg-neutral-100 text-neutral-900 font-medium'
+                                : 'bg-[#181818] border border-[#262626] text-neutral-400 hover:text-neutral-200 hover:border-[#383838]'
                             }`}
                           >
                             {ind}
@@ -395,17 +489,19 @@ export default function Home() {
 
                     {/* Aesthetic Chips */}
                     <div>
-                      <span className="block text-[10px] font-semibold text-slate-400 uppercase mb-1.5">Desired Aesthetic:</span>
-                      <div className="flex overflow-x-auto pb-1 scrollbar-none gap-1.5">
+                      <span className="block text-[11px] font-mono text-neutral-400 uppercase tracking-tight mb-2">
+                        Aesthetic Direction:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
                         {AESTHETIC_CHIPS.map((st, idx) => (
                           <button
                             key={idx}
                             type="button"
                             onClick={() => setStyle(st)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                            className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                               style === st
-                                ? 'bg-cyan-600 text-white font-semibold'
-                                : 'bg-slate-900 border border-slate-800 text-slate-400'
+                                ? 'bg-neutral-100 text-neutral-900 font-medium'
+                                : 'bg-[#181818] border border-[#262626] text-neutral-400 hover:text-neutral-200 hover:border-[#383838]'
                             }`}
                           >
                             {st}
@@ -418,28 +514,29 @@ export default function Home() {
               </AnimatePresence>
             </div>
 
-            {/* Primary Generate Button */}
+            {/* Primary Action Button (Solid Cobalt Blue, Linear/Raycast Style) */}
             <div className="pt-2">
               <button
                 type="button"
                 onClick={() => handleGenerate()}
                 disabled={isLoading || !prompt.trim()}
-                className={`w-full py-3.5 px-5 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 text-sm shadow-xl ${
+                className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                   isLoading || !prompt.trim()
-                    ? 'bg-slate-850 text-slate-600 cursor-not-allowed border border-slate-800'
-                    : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 active:scale-[0.99] shadow-purple-600/30 glow-purple'
+                    ? 'bg-[#1A1A1A] text-neutral-600 border border-[#262626] cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white border border-blue-400/20 shadow-sm'
                 }`}
               >
                 {isLoading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-white shrink-0" />
-                    <span className="truncate">{LOADING_STEPS[loadingStepIndex]}</span>
+                    <span className="font-mono text-xs truncate">
+                      {LOADING_STEPS[loadingStepIndex]}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-cyan-300 shrink-0" />
-                    <span>Generate Visual Brand Identity</span>
-                    <ArrowRight className="w-4 h-4 opacity-70 shrink-0" />
+                    <span>Generate Brand Identity System</span>
+                    <ArrowRight className="w-4 h-4 opacity-80 shrink-0" />
                   </>
                 )}
               </button>
@@ -447,35 +544,46 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Loading State */}
+        {/* Loading Progress State */}
         {isLoading && (
-          <div className="max-w-2xl mx-auto space-y-4 py-4 text-center">
-            <div className="glass-card rounded-2xl p-6 border border-purple-500/40 space-y-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 flex items-center justify-center mx-auto animate-pulse">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-white">{LOADING_STEPS[loadingStepIndex]}</h4>
-              <p className="text-xs text-slate-400">Crafting custom colors, font pairings, and brand guidelines...</p>
+          <div className="max-w-xl mx-auto py-8 text-center space-y-4">
+            <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 space-y-3">
+              <div className="w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin mx-auto" />
+              <h4 className="text-sm font-semibold text-neutral-200 font-heading">
+                {LOADING_STEPS[loadingStepIndex]}
+              </h4>
+              <p className="text-xs text-neutral-500 font-mono">
+                COMPUTING // CHROMATIC HIERARCHY & TYPOGRAPHY
+              </p>
             </div>
           </div>
         )}
 
-        {/* RESULTS DASHBOARD: CLEAN MOBILE-FIRST NAVIGATION */}
+        {/* Error Notification */}
+        {error && !isLoading && (
+          <div className="max-w-2xl mx-auto mb-8 p-4 rounded-lg bg-red-950/40 border border-red-800/60 text-red-300 text-xs flex items-start gap-3">
+            <span className="font-mono font-bold uppercase text-red-400">[Error]</span>
+            <p className="flex-1">{error}</p>
+          </div>
+        )}
+
+        {/* Studio Results Architecture */}
         {result && !isLoading && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
             className="max-w-4xl mx-auto space-y-6"
           >
-            {/* Mobile Touch Navigation Tabs */}
-            <div className="glass-card rounded-2xl p-2 border border-white/10 sticky top-18 z-30 shadow-xl backdrop-blur-xl">
+            {/* Minimalist Segmented Navigation Bar */}
+            <div className="bg-[#121212] border border-[#262626] rounded-lg p-1 sticky top-16 z-30 shadow-sm backdrop-blur-md">
               <div className="grid grid-cols-5 gap-1 text-center">
                 {[
-                  { id: 'overview', label: 'Brand', icon: Layout },
-                  { id: 'palette', label: 'Colors', icon: Palette },
-                  { id: 'typography', label: 'Fonts', icon: Type },
+                  { id: 'overview', label: 'Overview', icon: Layout },
+                  { id: 'palette', label: 'Color System', icon: Palette },
+                  { id: 'typography', label: 'Typography', icon: Type },
                   { id: 'mockups', label: 'Mockups', icon: Briefcase },
-                  { id: 'export', label: 'Export', icon: Code },
+                  { id: 'export', label: 'Export Code', icon: Code },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -483,62 +591,72 @@ export default function Home() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`py-2 px-1 rounded-xl text-center flex flex-col items-center justify-center transition-all ${
+                      className={`py-2 px-2 rounded-md text-xs flex items-center justify-center gap-1.5 transition-all ${
                         isActive
-                          ? 'bg-purple-600 text-white shadow-md font-bold'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-[#222222] text-white border border-[#333333] font-medium shadow-sm'
+                          : 'text-neutral-400 hover:text-neutral-200 hover:bg-[#181818]'
                       }`}
                     >
-                      <Icon className="w-4 h-4 mb-0.5" />
-                      <span className="text-[10px] truncate w-full">{tab.label}</span>
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden sm:inline truncate">{tab.label}</span>
+                      <span className="sm:hidden truncate">{tab.label.split(' ')[0]}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* TAB 1: BRAND OVERVIEW */}
+            {/* TAB 1: OVERVIEW */}
             {activeTab === 'overview' && (
-              <div className="space-y-4 sm:space-y-6">
-                {/* Brand Hero Box */}
-                <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-white/10 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                      <Bookmark className="w-3.5 h-3.5" />
-                      <span>Brand Identity</span>
+              <div className="space-y-6">
+                {/* Brand Hero Card */}
+                <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 sm:p-8 space-y-6">
+                  {/* Top Meta Line */}
+                  <div className="flex items-center justify-between border-b border-[#202020] pb-4">
+                    <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1.5 uppercase tracking-wide">
+                      <Bookmark className="w-3 h-3 text-neutral-400" />
+                      <span>Identity Specification</span>
                     </span>
                     {result.archetype && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      <span className="px-2 py-0.5 rounded border border-[#262626] bg-[#181818] text-[10px] font-mono text-neutral-300">
                         {result.archetype}
                       </span>
                     )}
                   </div>
 
+                  {/* Brand Headline & Tagline */}
                   <div>
                     <h2
-                      className="text-3xl sm:text-5xl font-black text-white tracking-tight break-words mb-2"
+                      className="text-4xl sm:text-6xl font-black text-white tracking-tight break-words mb-2"
                       style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
                     >
                       {result.brandName}
                     </h2>
-                    <p className="text-base sm:text-xl font-medium text-purple-200 italic">
+                    <p className="text-base sm:text-lg text-neutral-400 font-normal">
                       &ldquo;{result.slogan}&rdquo;
                     </p>
                   </div>
 
-                  {/* Logo Emblem & Mark Switcher */}
-                  <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
+                  {/* Geometric Emblem Studio Preview */}
+                  <div className="p-4 sm:p-5 rounded-lg bg-[#0E0E0E] border border-[#262626] flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
                       <div
-                        className={`w-16 h-16 shadow-xl flex items-center justify-center shrink-0 transition-all ${
-                          emblemShape === 'circle' ? 'rounded-full' : emblemShape === 'diamond' ? 'rotate-45 rounded-md' : 'rounded-2xl'
+                        className={`w-14 h-14 flex items-center justify-center shrink-0 border border-white/10 transition-all ${
+                          emblemShape === 'circle'
+                            ? 'rounded-full'
+                            : emblemShape === 'diamond'
+                            ? 'rotate-45 rounded'
+                            : 'rounded-lg'
                         }`}
                         style={{
-                          background: `linear-gradient(135deg, ${result.colors?.[0]?.hex || '#a855f7'}, ${result.colors?.[1]?.hex || '#06b6d4'})`,
+                          backgroundColor: result.colors?.[0]?.hex || '#111111',
+                          color: result.colors?.[4]?.hex || '#FFFFFF',
                         }}
                       >
                         <span
-                          className={`text-2xl font-black text-white ${emblemShape === 'diamond' ? '-rotate-45' : ''}`}
+                          className={`text-xl font-bold ${
+                            emblemShape === 'diamond' ? '-rotate-45' : ''
+                          }`}
                           style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
                         >
                           {result.brandName ? result.brandName.substring(0, 2).toUpperCase() : 'AC'}
@@ -546,18 +664,24 @@ export default function Home() {
                       </div>
 
                       <div className="text-left">
-                        <span className="text-xs font-bold text-white block">{result.brandName} Emblem</span>
-                        <span className="text-[11px] text-slate-400 block">Tap shape to toggle:</span>
+                        <span className="text-xs font-medium text-white block">
+                          Geometric Vector Mark
+                        </span>
+                        <span className="text-[11px] font-mono text-neutral-500 block">
+                          Switch silhouette geometry:
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                    <div className="flex items-center gap-1 bg-[#161616] p-1 rounded-md border border-[#262626]">
                       {['rounded', 'circle', 'diamond'].map((shape) => (
                         <button
                           key={shape}
                           onClick={() => setEmblemShape(shape)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold transition-all ${
-                            emblemShape === shape ? 'bg-purple-600 text-white' : 'text-slate-400'
+                          className={`px-2.5 py-1 rounded text-[10px] font-mono uppercase transition-colors ${
+                            emblemShape === shape
+                              ? 'bg-neutral-100 text-neutral-900 font-semibold'
+                              : 'text-neutral-400 hover:text-neutral-200'
                           }`}
                         >
                           {shape}
@@ -566,71 +690,111 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Quick 5 Color Swatch Bar */}
+                  {/* Horizontal Swatch Strip */}
                   <div>
-                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase block mb-2">5-Tone Palette Swatches:</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-mono uppercase text-neutral-400">
+                        5-Tone Chromatic Scale
+                      </span>
+                      <span className="text-[10px] font-mono text-neutral-500">
+                        Click swatch to copy
+                      </span>
+                    </div>
+
                     <div className="grid grid-cols-5 gap-2">
                       {result.colors?.map((color, idx) => (
                         <button
                           key={idx}
                           onClick={() => copyToClipboard(color.hex)}
-                          className="h-12 rounded-xl border border-white/10 relative group overflow-hidden shadow-md"
+                          className="h-12 rounded-md border border-[#262626] relative group overflow-hidden transition-transform active:scale-[0.98]"
                           style={{ backgroundColor: color.hex }}
+                          title={`${color.name} (${color.hex})`}
                         >
-                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
-                            Copy
+                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-medium text-white bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {color.hex}
                           </span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Logo Concept */}
-                  {result.logoConcept && (
-                    <div className="p-4 rounded-xl bg-slate-950/70 border border-white/10 text-xs">
-                      <span className="font-bold text-cyan-400 block mb-1">Logo Mark Directive:</span>
-                      <p className="text-slate-300 leading-relaxed">{result.logoConcept}</p>
-                    </div>
-                  )}
+                  {/* Editorial Directives: Two Column Layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    {/* Directive 01: Logo Mark Directive */}
+                    {result.logoConcept && (
+                      <div className="p-4 rounded-lg bg-[#0E0E0E] border border-[#262626] space-y-1.5">
+                        <span className="text-[10px] font-mono text-neutral-400 block uppercase tracking-wider">
+                          Directive 01 // Logo Mark
+                        </span>
+                        <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                          {result.logoConcept}
+                        </p>
+                      </div>
+                    )}
 
-                  {/* Vibe Description */}
-                  <div className="p-4 rounded-xl bg-slate-950/70 border border-white/10 text-xs">
-                    <span className="font-bold text-emerald-400 block mb-1">Brand Vibe & Philosophy:</span>
-                    <p className="text-slate-300 leading-relaxed font-normal" style={{ fontFamily: `'${bodyFontFamily}', sans-serif` }}>
-                      {result.vibeDescription}
-                    </p>
+                    {/* Directive 02: Philosophy & Vibe */}
+                    <div className="p-4 rounded-lg bg-[#0E0E0E] border border-[#262626] space-y-1.5">
+                      <span className="text-[10px] font-mono text-neutral-400 block uppercase tracking-wider">
+                        Directive 02 // Manifesto & Vibe
+                      </span>
+                      <p
+                        className="text-xs text-neutral-300 leading-relaxed"
+                        style={{ fontFamily: `'${bodyFontFamily}', sans-serif` }}
+                      >
+                        {result.vibeDescription}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 2: COLOR PALETTE */}
+            {/* TAB 2: COLOR SYSTEM */}
             {activeTab === 'palette' && (
-              <div className="space-y-4 sm:space-y-6">
-                <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-white/10 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                      <Palette className="w-4 h-4 text-cyan-400" />
-                      <span>5-Tone Color Hierarchy</span>
-                    </h3>
-                    <span className="text-[10px] text-slate-400">Tap to copy Hex</span>
+              <div className="space-y-6">
+                <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 sm:p-8 space-y-6">
+                  <div className="flex items-center justify-between border-b border-[#202020] pb-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-white font-heading">
+                        5-Tone Chromatic Hierarchy
+                      </h3>
+                      <p className="text-xs text-neutral-400">
+                        High-contrast, production-calibrated color tokens.
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-500">
+                      WCAG AA Compliant
+                    </span>
                   </div>
 
+                  {/* 5-Tone Vertical Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                     {result.colors?.map((c, idx) => (
-                      <div key={idx} className="bg-slate-950/80 p-3 rounded-2xl border border-white/10 flex sm:flex-col items-center gap-3">
+                      <div
+                        key={idx}
+                        className="bg-[#0E0E0E] p-3 rounded-lg border border-[#262626] flex sm:flex-col items-center gap-3 text-left sm:text-center group"
+                      >
                         <div
-                          className="w-14 h-14 sm:w-full sm:h-24 rounded-xl border border-white/10 shrink-0"
+                          className="w-14 h-14 sm:w-full sm:h-24 rounded border border-white/10 shrink-0"
                           style={{ backgroundColor: c.hex }}
                         />
-                        <div className="flex-1 sm:w-full text-left sm:text-center">
-                          <span className="text-[9px] font-mono text-purple-400 font-bold block">Tone 0{idx + 1}</span>
-                          <h4 className="text-xs font-bold text-white truncate">{c.name}</h4>
-                          <p className="text-[11px] font-mono text-slate-400 mt-0.5">{c.hex}</p>
+                        <div className="flex-1 sm:w-full">
+                          <span className="text-[10px] font-mono text-neutral-500 block uppercase">
+                            {COLOR_ROLES[idx] || `Tone 0${idx + 1}`}
+                          </span>
+                          <h4 className="text-xs font-semibold text-neutral-200 truncate mt-0.5">
+                            {c.name}
+                          </h4>
+                          <p className="text-[11px] font-mono text-neutral-400 mt-1">
+                            {c.hex}
+                          </p>
+                          <p className="text-[9px] font-mono text-neutral-600 mt-0.5">
+                            {hexToRgb(c.hex)}
+                          </p>
                         </div>
                         <button
                           onClick={() => copyToClipboard(c.hex)}
-                          className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-semibold text-slate-300 hover:bg-purple-600 hover:text-white transition-colors"
+                          className="px-2.5 py-1 rounded bg-[#181818] border border-[#262626] text-[10px] font-mono text-neutral-300 hover:text-white hover:border-[#383838] transition-colors shrink-0"
                         >
                           Copy
                         </button>
@@ -643,81 +807,235 @@ export default function Home() {
 
             {/* TAB 3: TYPOGRAPHY */}
             {activeTab === 'typography' && (
-              <div className="space-y-4">
-                <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-white/10 space-y-4">
-                  <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                    <Type className="w-4 h-4 text-purple-400" />
-                    <span>Google Fonts Typography Pairing</span>
-                  </h3>
+              <div className="space-y-6">
+                <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 sm:p-8 space-y-6">
+                  <div className="border-b border-[#202020] pb-4">
+                    <h3 className="text-base font-semibold text-white font-heading">
+                      Google Fonts Typographic Specimen
+                    </h3>
+                    <p className="text-xs text-neutral-400">
+                      Curated pairing with distinct hierarchy for headlines and digital interfaces.
+                    </p>
+                  </div>
 
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-slate-950/80 border border-white/10 space-y-2">
-                      <span className="text-[10px] font-mono font-bold text-purple-400 uppercase">Heading Font: {headingFontFamily}</span>
-                      <p className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}>
-                        {result.brandName}: Visual Excellence
-                      </p>
+                  {/* Heading Font Card */}
+                  <div className="p-5 rounded-lg bg-[#0E0E0E] border border-[#262626] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+                        Primary Heading Font // {headingFontFamily}
+                      </span>
+                      <span className="text-[10px] font-mono text-neutral-500">
+                        Display Scale
+                      </span>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-slate-950/80 border border-white/10 space-y-2">
-                      <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase">Body Font: {bodyFontFamily}</span>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal" style={{ fontFamily: `'${bodyFontFamily}', sans-serif` }}>
-                        {result.vibeDescription}
-                      </p>
+                    <p
+                      className="text-2xl sm:text-4xl font-bold text-white tracking-tight leading-tight"
+                      style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
+                    >
+                      {result.brandName}: Architectural Precision
+                    </p>
+
+                    <div className="pt-2 text-xs font-mono text-neutral-500 tracking-wider">
+                      Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789
                     </div>
                   </div>
+
+                  {/* Body Font Card */}
+                  <div className="p-5 rounded-lg bg-[#0E0E0E] border border-[#262626] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+                        Body Font // {bodyFontFamily}
+                      </span>
+                      <span className="text-[10px] font-mono text-neutral-500">
+                        Interface & Prose
+                      </span>
+                    </div>
+
+                    <p
+                      className="text-sm text-neutral-300 leading-relaxed font-normal"
+                      style={{ fontFamily: `'${bodyFontFamily}', sans-serif` }}
+                    >
+                      {result.vibeDescription}
+                    </p>
+                  </div>
+
+                  {/* Typographic Rationale */}
+                  {result.fontPairing?.rationale && (
+                    <div className="p-4 rounded-lg bg-[#181818] border border-[#262626] space-y-1">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase">
+                        Typographic Rationale
+                      </span>
+                      <p className="text-xs text-neutral-300 leading-relaxed">
+                        {result.fontPairing.rationale}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {/* TAB 4: MOCKUPS */}
             {activeTab === 'mockups' && (
-              <div className="space-y-4">
-                <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-white/10 space-y-4">
-                  <h3 className="text-base sm:text-lg font-bold text-white mb-2">Brand Identity Mockups</h3>
+              <div className="space-y-6">
+                <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 sm:p-8 space-y-6">
+                  <div className="border-b border-[#202020] pb-4">
+                    <h3 className="text-base font-semibold text-white font-heading">
+                      Brand Collateral Specimen
+                    </h3>
+                    <p className="text-xs text-neutral-400">
+                      High-contrast Swiss stationery preview (Aspect Ratio 3.5:2).
+                    </p>
+                  </div>
 
                   {/* Business Card Front & Back */}
-                  <div className="space-y-3">
-                    <span className="text-xs font-bold text-slate-300 uppercase block">Business Card Preview</span>
-                    <div
-                      className="w-full h-40 rounded-2xl p-5 shadow-2xl border border-white/10 flex flex-col justify-between"
-                      style={{ backgroundColor: result.colors?.[0]?.hex || '#0f172a' }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-black text-white" style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}>
-                          {result.brandName}
-                        </span>
-                        <div
-                          className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white text-xs"
-                          style={{ backgroundColor: result.colors?.[1]?.hex || '#6366f1' }}
-                        >
-                          {result.brandName?.charAt(0)}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Front Card */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase block">
+                        Stationery Front // Minimalist Mark
+                      </span>
+                      <div
+                        className="w-full aspect-[3.5/2] rounded-xl p-6 border border-[#262626] flex flex-col justify-between shadow-card relative overflow-hidden"
+                        style={{
+                          backgroundColor: result.colors?.[0]?.hex || '#0A0A0A',
+                          color: result.colors?.[4]?.hex || '#FFFFFF',
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div
+                            className="w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs"
+                            style={{
+                              backgroundColor: result.colors?.[1]?.hex || '#2563EB',
+                              color: '#FFFFFF',
+                            }}
+                          >
+                            {result.brandName?.charAt(0) || 'A'}
+                          </div>
+                          <span className="text-[10px] font-mono opacity-60">
+                            SPEC 01
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4
+                            className="text-2xl font-bold tracking-tight"
+                            style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
+                          >
+                            {result.brandName}
+                          </h4>
+                          <p className="text-xs opacity-75 mt-0.5">
+                            {result.slogan}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-xs text-purple-200 italic">{result.slogan}</p>
+                    </div>
+
+                    {/* Back Card */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase block">
+                        Stationery Back // Editorial Contact
+                      </span>
+                      <div
+                        className="w-full aspect-[3.5/2] rounded-xl p-6 border border-[#262626] flex flex-col justify-between shadow-card"
+                        style={{
+                          backgroundColor: result.colors?.[3]?.hex || '#141414',
+                          color: result.colors?.[4]?.hex || '#FFFFFF',
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className="text-sm font-semibold tracking-tight"
+                            style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
+                          >
+                            {result.brandName}
+                          </span>
+                          <span className="text-[10px] font-mono opacity-50">
+                            HQ STUDIO
+                          </span>
+                        </div>
+
+                        <div className="space-y-1 text-xs opacity-80 font-mono">
+                          <p>studio@{result.brandName ? result.brandName.toLowerCase().replace(/\s+/g, '') : 'brand'}.design</p>
+                          <p>+1 (800) 248-7238</p>
+                          <p>Zurich // San Francisco // Tokyo</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 5: EXPORT */}
+            {/* TAB 5: EXPORT TOKENS */}
             {activeTab === 'export' && (
-              <div className="space-y-4">
-                <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-white/10 space-y-4">
-                  <h3 className="text-base sm:text-lg font-bold text-white">Export Code Tokens</h3>
+              <div className="space-y-6">
+                <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 sm:p-8 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#202020] pb-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-white font-heading">
+                        Design Token Architecture
+                      </h3>
+                      <p className="text-xs text-neutral-400">
+                        Production code tokens ready for web, mobile, and design systems.
+                      </p>
+                    </div>
 
+                    {/* Format Switcher */}
+                    <div className="flex items-center gap-1 bg-[#181818] p-1 rounded-md border border-[#262626] self-start sm:self-auto">
+                      {[
+                        { id: 'tailwind', label: 'Tailwind' },
+                        { id: 'css', label: 'CSS Vars' },
+                        { id: 'json', label: 'JSON' },
+                      ].map((fmt) => (
+                        <button
+                          key={fmt.id}
+                          onClick={() => setExportFormat(fmt.id)}
+                          className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
+                            exportFormat === fmt.id
+                              ? 'bg-neutral-100 text-neutral-900 font-semibold'
+                              : 'text-neutral-400 hover:text-neutral-200'
+                          }`}
+                        >
+                          {fmt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Code Viewer */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-purple-400">JSON Manifest</span>
+                      <span className="text-xs font-mono text-neutral-400 flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-neutral-400" />
+                        <span>
+                          {exportFormat === 'tailwind' && 'tailwind.config.js'}
+                          {exportFormat === 'css' && 'globals.css (:root)'}
+                          {exportFormat === 'json' && 'tokens.json (W3C Format)'}
+                        </span>
+                      </span>
+
                       <button
-                        onClick={() => copyToClipboard(JSON.stringify(result, null, 2), 'JSON Manifest Copied!')}
-                        className="px-3 py-1 rounded-lg bg-purple-600 text-white text-xs font-bold"
+                        onClick={() => {
+                          const content =
+                            exportFormat === 'tailwind'
+                              ? getTailwindSnippet(result)
+                              : exportFormat === 'css'
+                              ? getCssVarsSnippet(result)
+                              : JSON.stringify(result, null, 2);
+                          copyToClipboard(content, `${exportFormat.toUpperCase()} tokens copied!`);
+                        }}
+                        className="px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
                       >
-                        Copy JSON
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy Code</span>
                       </button>
                     </div>
-                    <pre className="p-3.5 rounded-xl bg-slate-950 border border-white/10 text-xs font-mono text-slate-300 overflow-x-auto max-h-56">
-                      {JSON.stringify(result, null, 2)}
+
+                    <pre className="p-4 rounded-lg bg-[#0A0A0A] border border-[#262626] text-xs font-mono text-neutral-300 overflow-x-auto max-h-72 leading-relaxed selection:bg-blue-600">
+                      {exportFormat === 'tailwind' && getTailwindSnippet(result)}
+                      {exportFormat === 'css' && getCssVarsSnippet(result)}
+                      {exportFormat === 'json' && JSON.stringify(result, null, 2)}
                     </pre>
                   </div>
                 </div>
@@ -727,10 +1045,14 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#070a12]/90 py-6 mt-12 z-10 relative">
-        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} AuraCraft Studio Pro — Visual Brand System.</p>
+      {/* Swiss Editorial Studio Footer */}
+      <footer className="border-t border-[#262626] bg-[#0A0A0A] py-8 mt-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            <span>AURACRAFT STUDIO PRO // EDITION {new Date().getFullYear()}</span>
+          </div>
+          <p>© {new Date().getFullYear()} AuraCraft. Swiss-Style Brand Architecture.</p>
         </div>
       </footer>
     </div>

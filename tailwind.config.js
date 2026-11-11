@@ -9,47 +9,49 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        dark: {
-          950: '#07090e',
-          900: '#0b0f19',
-          850: '#111726',
-          800: '#172033',
-          700: '#222f47',
-          600: '#334466',
+        obsidian: {
+          950: '#050505',
+          900: '#0A0A0A',
+          850: '#111111',
+          800: '#161616',
+          750: '#1C1C1C',
+          700: '#262626',
+          600: '#333333',
+          500: '#484848',
+          400: '#71717A',
+          300: '#A1A1AA',
+          200: '#D4D4D8',
+          100: '#EDEDED',
+          50: '#FAFAFA',
         },
-        brand: {
-          violet: '#8b5cf6',
-          purple: '#a855f7',
-          cyan: '#06b6d4',
-          emerald: '#10b981',
-          rose: '#f43f5e',
-          amber: '#f59e0b',
+        studio: {
+          bg: '#0A0A0A',
+          card: '#141414',
+          sub: '#181818',
+          border: '#262626',
+          hover: '#383838',
+          text: '#EDEDED',
+          muted: '#8A8A8A',
+        },
+        accent: {
+          cobalt: '#2563EB',
+          'cobalt-hover': '#1D4ED8',
+          indigo: '#4F46E5',
+          blue: '#3B82F6',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        heading: ['Outfit', 'Inter', 'sans-serif'],
-        mono: ['Fira Code', 'monospace'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        heading: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
-      animation: {
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'glow-spin': 'spin 12s linear infinite',
-        'shimmer': 'shimmer 2s infinite linear',
-        'float': 'float 6s ease-in-out infinite',
+      letterSpacing: {
+        tighter: '-0.04em',
+        tight: '-0.02em',
       },
-      keyframes: {
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
-        }
-      },
-      backgroundImage: {
-        'radial-gradient': 'radial-gradient(circle at center, var(--tw-gradient-stops))',
-        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
+      boxShadow: {
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.4)',
+        'card': '0 4px 20px -2px rgba(0, 0, 0, 0.5)',
       }
     },
   },
