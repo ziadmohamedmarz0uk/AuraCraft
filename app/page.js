@@ -21,41 +21,54 @@ import {
   Sun,
   Moon,
   Compass,
+  Download,
+  Share2,
+  CheckCircle2,
+  Sparkles,
+  Smartphone,
+  CreditCard,
+  Globe,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const PRESET_IDEAS = [
   {
+    category: 'Gaming',
     label: 'Cyberpunk Studio',
     prompt: 'A futuristic game development studio specializing in dark cyberpunk RPGs with neon aesthetics.',
     industry: 'Gaming & Web3',
     style: 'Cyberpunk Neon',
   },
   {
+    category: 'Wellness',
     label: 'Luxury Eco Spa',
     prompt: 'A sustainable luxury skincare and wellness brand using organic botanical extractions.',
     industry: 'Beauty & Wellness',
     style: 'Minimalist Organic',
   },
   {
+    category: 'Fintech',
     label: 'Web3 Protocol',
     prompt: 'A zero-fee decentralized finance protocol offering instant global cross-border payments.',
     industry: 'Fintech',
     style: 'Ultra Modern Tech',
   },
   {
+    category: 'Craft',
     label: 'Artisan Roaster',
     prompt: 'A specialty cold brew coffee roaster sourced from high-altitude Ethiopian micro-farms.',
     industry: 'Food & Beverage',
     style: 'Warm Craft',
   },
   {
+    category: 'AI',
     label: 'AI Developer Agent',
     prompt: 'An autonomous AI assistant helping engineers write zero-bug production code.',
     industry: 'Tech & AI',
     style: 'Futuristic Minimal',
   },
   {
+    category: 'Fashion',
     label: 'Haute Fashion',
     prompt: 'An avant-garde luxury fashion label blending 3D printed garments with vintage textiles.',
     industry: 'Fashion & Luxury',
@@ -92,11 +105,11 @@ const LOADING_STEPS = [
 ];
 
 const SWATCH_ROLES = [
-  'Primary',
-  'Secondary',
-  'Accent',
-  'Dark Neutral',
-  'Surface',
+  { role: 'Primary', desc: 'Dominant Brand Tone' },
+  { role: 'Secondary', desc: 'Structural Support' },
+  { role: 'Accent', desc: 'Interactive Vibrant' },
+  { role: 'Dark Neutral', desc: 'Deep Typography & Well' },
+  { role: 'Surface', desc: 'Canvas / Light Field' },
 ];
 
 function hexToRgb(hex) {
@@ -123,7 +136,8 @@ export default function Home() {
   const [copiedNotification, setCopiedNotification] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [emblemShape, setEmblemShape] = useState('rounded'); // 'rounded' | 'circle' | 'diamond'
-  const [exportFormat, setExportFormat] = useState('tailwind'); // 'tailwind' | 'css' | 'json'
+  const [emblemColorMode, setEmblemColorMode] = useState('primary'); // 'primary' | 'inverted' | 'accent'
+  const [exportFormat, setExportFormat] = useState('tailwind'); // 'tailwind' | 'css' | 'json' | 'svg'
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
@@ -211,8 +225,8 @@ export default function Home() {
       // Trigger celebratory confetti with brand colors
       try {
         confetti({
-          particleCount: 60,
-          spread: 60,
+          particleCount: 70,
+          spread: 65,
           origin: { y: 0.6 },
           colors: data.colors?.map((c) => c.hex) || ['#2563EB', '#111111', '#E5E5E5'],
         });
@@ -224,6 +238,15 @@ export default function Home() {
       setError(err.message || 'Something went wrong while crafting the brand identity.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Keyboard shortcut listener: Cmd + Enter / Ctrl + Enter
+  const handleKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if (!isLoading && prompt.trim()) {
+        handleGenerate();
+      }
     }
   };
 
@@ -296,6 +319,17 @@ module.exports = {
     return vars;
   };
 
+  const getSvgSnippet = (res) => {
+    if (!res) return '';
+    const initials = res.brandName ? res.brandName.substring(0, 2).toUpperCase() : 'AC';
+    const bg = res.colors?.[0]?.hex || '#0A0A0A';
+    const fg = res.colors?.[4]?.hex || '#FFFFFF';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="36" fill="${bg}" />
+  <text x="50%" y="54%" font-family="sans-serif" font-weight="900" font-size="76" fill="${fg}" text-anchor="middle" dominant-baseline="middle" letter-spacing="-3">${initials}</text>
+</svg>`;
+  };
+
   const headingFontFamily = result?.fontPairing
     ? typeof result.fontPairing === 'object'
       ? result.fontPairing.heading
@@ -308,9 +342,26 @@ module.exports = {
       : 'Inter'
     : 'Inter';
 
+  // Compute monogram styling based on color mode
+  const getEmblemColors = () => {
+    if (!result?.colors) return { bg: '#111111', fg: '#FFFFFF' };
+    if (emblemColorMode === 'inverted') {
+      return { bg: result.colors[4]?.hex || '#FFFFFF', fg: result.colors[0]?.hex || '#111111' };
+    }
+    if (emblemColorMode === 'accent') {
+      return { bg: result.colors[2]?.hex || '#2563EB', fg: '#FFFFFF' };
+    }
+    return { bg: result.colors[0]?.hex || '#111111', fg: result.colors[4]?.hex || '#FFFFFF' };
+  };
+
+  const emblemColors = getEmblemColors();
+
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#FAFAFA] dark:bg-[#0A0A0A] text-[#111111] dark:text-[#EDEDED] font-sans transition-colors duration-200">
-      {/* Precision Toast Notifications */}
+    <div className="min-h-screen flex flex-col justify-between bg-[#FAFAFA] dark:bg-[#0A0A0A] text-[#111111] dark:text-[#EDEDED] font-sans transition-colors duration-200 relative selection:bg-blue-600 selection:text-white">
+      {/* Background Architectural Dot Grid Texture */}
+      <div className="fixed inset-0 pointer-events-none studio-grid grid-mask z-0 opacity-80" />
+
+      {/* Floating Raycast-Style Notifications */}
       <AnimatePresence>
         {copiedHex && (
           <motion.div
@@ -318,7 +369,7 @@ module.exports = {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-neutral-900 dark:text-white shadow-xl"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-neutral-900 dark:text-white shadow-2xl"
           >
             <div className="w-4 h-4 rounded-full flex items-center justify-center bg-blue-600 text-white shrink-0">
               <Check className="w-2.5 h-2.5 stroke-[3]" />
@@ -336,7 +387,7 @@ module.exports = {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-neutral-900 dark:text-white shadow-xl"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-neutral-900 dark:text-white shadow-2xl"
           >
             <div className="w-4 h-4 rounded-full flex items-center justify-center bg-blue-600 text-white shrink-0">
               <Check className="w-2.5 h-2.5 stroke-[3]" />
@@ -350,12 +401,12 @@ module.exports = {
       </AnimatePresence>
 
       {/* Editorial Studio Top Navigation */}
-      <header className="border-b border-[#E5E5E5] dark:border-[#262626] bg-[#FAFAFA]/90 dark:bg-[#0A0A0A]/90 backdrop-blur-md sticky top-0 z-40 transition-colors duration-200">
+      <header className="border-b border-[#E5E5E5] dark:border-[#222222] bg-[#FAFAFA]/90 dark:bg-[#0A0A0A]/90 backdrop-blur-md sticky top-0 z-40 transition-colors duration-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Minimalist Studio Mark */}
             <div className="w-7 h-7 rounded-md bg-[#F0F0F0] dark:bg-[#161616] border border-[#E5E5E5] dark:border-[#262626] flex items-center justify-center shrink-0">
-              <div className="w-3.5 h-3.5 border-2 border-neutral-800 dark:border-neutral-300 rounded-[2px] flex items-center justify-center">
+              <div className="w-3.5 h-3.5 border-2 border-neutral-900 dark:border-neutral-200 rounded-[2px] flex items-center justify-center">
                 <div className="w-1 h-1 bg-blue-600 rounded-[0.5px]" />
               </div>
             </div>
@@ -372,11 +423,17 @@ module.exports = {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Engine Status Beacon */}
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F5F5F5] dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-[10px] font-mono text-neutral-500 dark:text-neutral-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>ENGINE READY</span>
+            </div>
+
             {/* Light / Dark Mode Toggle */}
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Switch to Light Mode (#FAFAFA)' : 'Switch to Dark Mode (#0A0A0A)'}
-              className="px-2.5 py-1.5 rounded-md bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1.5 rounded-md bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] transition-colors flex items-center gap-1.5 shadow-sm"
             >
               {theme === 'dark' ? (
                 <>
@@ -398,7 +455,7 @@ module.exports = {
                 setResult(null);
                 setError(null);
               }}
-              className="px-2.5 py-1.5 rounded-md bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1.5 rounded-md bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <RefreshCw className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
               <span>Reset</span>
@@ -408,15 +465,15 @@ module.exports = {
       </header>
 
       {/* Main Workspace */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex-grow w-full">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex-grow w-full z-10 relative">
         {/* Editorial Headline Section */}
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-[11px] font-mono text-neutral-600 dark:text-neutral-400 mb-4 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] text-[11px] font-mono text-neutral-600 dark:text-neutral-400 mb-4 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-            <span>SYSTEM // GENERATIVE BRAND ARCHITECTURE</span>
+            <span>STUDIO SYSTEM // GENERATIVE IDENTITY ARCHITECTURE</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-bold font-heading text-[#111111] dark:text-[#FAFAFA] tracking-tight leading-tight mb-3">
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-heading text-[#111111] dark:text-[#FAFAFA] tracking-tight leading-tight mb-3">
             Create Iconic Visual Brands
           </h2>
 
@@ -425,43 +482,56 @@ module.exports = {
           </p>
         </div>
 
-        {/* Central Input Card */}
+        {/* Central Studio Console */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="max-w-2xl mx-auto mb-12"
+          transition={{ duration: 0.25 }}
+          className="max-w-2xl mx-auto mb-14"
         >
-          <div className="bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
-            {/* Input Header & Textarea */}
+          <div className="studio-card rounded-xl p-5 sm:p-7 space-y-5">
+            {/* Input Header & Prompt Area */}
             <div>
-              <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center justify-between mb-2">
                 <label
                   htmlFor="brand-prompt"
-                  className="text-xs font-medium text-neutral-800 dark:text-neutral-200"
+                  className="text-xs font-medium text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5"
                 >
-                  Business Concept or Venture Description
+                  <Terminal className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Business Concept or Venture Directive</span>
                 </label>
-                <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500">
-                  Step 1 of 2
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-neutral-400 hidden sm:inline">
+                    {prompt.length} chars
+                  </span>
+                  <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
+                    Step 1 of 2
+                  </span>
+                </div>
               </div>
+
               <textarea
                 id="brand-prompt"
                 rows={3}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g. A minimalist architecture studio focused on brutalist concrete structures and sustainable mass timber..."
-                className="w-full bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-[#E5E5E5] dark:border-[#262626] rounded-lg p-3.5 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all resize-none leading-relaxed font-sans"
+                onKeyDown={handleKeyDown}
+                placeholder="e.g. A minimalist architecture studio focused on brutalist concrete structures, monolithic geometry, and mass timber..."
+                className="w-full studio-input rounded-lg p-3.5 text-sm leading-relaxed resize-none focus:outline-none"
                 required
               />
             </div>
 
             {/* Flat Minimal Inspiration Chips */}
             <div>
-              <span className="block text-[10px] font-mono font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2.5">
-                Quick Inspiration Ideas
-              </span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Quick Inspiration Ideas
+                </span>
+                <span className="text-[10px] font-mono text-neutral-400 hidden sm:inline">
+                  Click to prefill & generate
+                </span>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {PRESET_IDEAS.map((item, idx) => (
                   <button
@@ -473,9 +543,12 @@ module.exports = {
                       setStyle(item.style);
                       handleGenerate(item.prompt);
                     }}
-                    className="px-3 py-1.5 rounded-md bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-xs font-normal text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] hover:bg-[#EBEBEB] dark:hover:bg-[#1E1E1E] transition-all"
+                    className="px-2.5 py-1.5 rounded-md bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-xs font-normal text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] hover:bg-[#EBEBEB] dark:hover:bg-[#202020] transition-all flex items-center gap-1.5"
                   >
-                    {item.label}
+                    <span className="text-[9px] font-mono text-neutral-400 dark:text-neutral-500 uppercase">
+                      {item.category}
+                    </span>
+                    <span className="font-medium">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -562,12 +635,12 @@ module.exports = {
             </div>
 
             {/* Primary Action Button */}
-            <div className="pt-2">
+            <div className="pt-2 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => handleGenerate()}
                 disabled={isLoading || !prompt.trim()}
-                className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                   isLoading || !prompt.trim()
                     ? 'bg-neutral-200 dark:bg-[#1A1A1A] text-neutral-400 dark:text-neutral-600 border border-neutral-300 dark:border-[#262626] cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white border border-blue-400/20 shadow-sm'
@@ -587,6 +660,10 @@ module.exports = {
                   </>
                 )}
               </button>
+
+              <span className="hidden sm:inline text-[10px] font-mono text-neutral-400 dark:text-neutral-500 px-2 py-1 rounded bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626]">
+                ⌘ ⏎
+              </span>
             </div>
           </div>
         </motion.div>
@@ -594,7 +671,7 @@ module.exports = {
         {/* Loading Progress State */}
         {isLoading && (
           <div className="max-w-xl mx-auto py-8 text-center space-y-4">
-            <div className="bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 space-y-3 shadow-sm">
+            <div className="studio-card rounded-xl p-6 space-y-3">
               <div className="w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin mx-auto" />
               <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 font-heading">
                 {LOADING_STEPS[loadingStepIndex]}
@@ -657,59 +734,78 @@ module.exports = {
             {activeTab === 'overview' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 {/* Bento Card 1: Brand Identity Hero (7 cols on desktop) */}
-                <div className="lg:col-span-7 bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-7 flex flex-col justify-between space-y-6 shadow-sm">
+                <div className="lg:col-span-7 studio-card rounded-xl p-6 sm:p-7 flex flex-col justify-between space-y-6">
                   <div>
                     {/* Top Meta Line */}
                     <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#202020] pb-3 mb-4">
                       <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5 uppercase tracking-wide">
                         <Bookmark className="w-3 h-3 text-neutral-400" />
-                        <span>Identity Specification</span>
+                        <span>System Spec // 01</span>
                       </span>
                       {result.archetype && (
-                        <span className="px-2 py-0.5 rounded border border-[#E5E5E5] dark:border-[#262626] bg-[#F5F5F5] dark:bg-[#181818] text-[10px] font-mono text-neutral-700 dark:text-neutral-300 font-medium">
-                          {result.archetype}
-                        </span>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#E5E5E5] dark:border-[#262626] bg-[#F5F5F5] dark:bg-[#181818] text-[10px] font-mono text-neutral-700 dark:text-neutral-300 font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                          <span>{result.archetype}</span>
+                        </div>
                       )}
                     </div>
 
                     {/* Brand Name & Tagline */}
                     <h2
-                      className="text-3xl sm:text-5xl font-extrabold text-neutral-900 dark:text-white tracking-tight break-words mb-2 leading-none"
+                      className="text-4xl sm:text-6xl font-black text-neutral-900 dark:text-white tracking-tight break-words mb-3 leading-none"
                       style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
                     >
                       {result.brandName}
                     </h2>
-                    <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 font-normal leading-relaxed">
+                    <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 font-normal leading-relaxed italic">
                       &ldquo;{result.slogan}&rdquo;
                     </p>
                   </div>
 
-                  {/* Brand Meta Pills */}
-                  <div className="pt-2 border-t border-neutral-100 dark:border-[#202020] flex flex-wrap items-center gap-2 text-xs font-mono">
-                    <div className="px-2.5 py-1 rounded bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-neutral-600 dark:text-neutral-400">
-                      <span className="text-neutral-400 mr-1.5">Sector:</span>
-                      <span className="text-neutral-800 dark:text-neutral-200">{industry || 'Venture Core'}</span>
+                  {/* Brand Meta Specs Grid */}
+                  <div className="pt-4 border-t border-neutral-100 dark:border-[#202020] grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                    <div className="p-2 rounded bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
+                      <span className="text-[10px] text-neutral-400 block uppercase">Sector</span>
+                      <span className="text-neutral-800 dark:text-neutral-200 font-medium truncate block">{industry || 'Venture'}</span>
                     </div>
-                    <div className="px-2.5 py-1 rounded bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-neutral-600 dark:text-neutral-400">
-                      <span className="text-neutral-400 mr-1.5">Type:</span>
-                      <span className="text-neutral-800 dark:text-neutral-200">{headingFontFamily}</span>
+                    <div className="p-2 rounded bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
+                      <span className="text-[10px] text-neutral-400 block uppercase">Aesthetic</span>
+                      <span className="text-neutral-800 dark:text-neutral-200 font-medium truncate block">{style || 'Modern'}</span>
+                    </div>
+                    <div className="p-2 rounded bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
+                      <span className="text-[10px] text-neutral-400 block uppercase">Display Font</span>
+                      <span className="text-neutral-800 dark:text-neutral-200 font-medium truncate block">{headingFontFamily}</span>
+                    </div>
+                    <div className="p-2 rounded bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
+                      <span className="text-[10px] text-neutral-400 block uppercase">Contrast</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium block">AAA High</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Bento Card 2: Geometric Monogram Studio (5 cols on desktop) */}
-                <div className="lg:col-span-5 bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-7 flex flex-col justify-between space-y-5 shadow-sm">
+                <div className="lg:col-span-5 studio-card rounded-xl p-6 sm:p-7 flex flex-col justify-between space-y-5">
                   <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#202020] pb-3">
                     <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                       Geometric Mark Studio
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
-                      Vector Scalable
-                    </span>
+                    <button
+                      onClick={() => copyToClipboard(getSvgSnippet(result), 'Vector SVG Markup Copied!')}
+                      className="text-[10px] font-mono text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3" />
+                      <span>Copy SVG</span>
+                    </button>
                   </div>
 
-                  {/* Center Monogram Preview */}
-                  <div className="py-2 flex flex-col items-center justify-center">
+                  {/* Drafting Canvas with Coordinate Crosshairs */}
+                  <div className="py-4 px-6 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020] relative flex flex-col items-center justify-center">
+                    {/* Drafting crosshairs */}
+                    <span className="crosshair-corner top-2 left-2 border-t-2 border-l-2" />
+                    <span className="crosshair-corner top-2 right-2 border-t-2 border-r-2" />
+                    <span className="crosshair-corner bottom-2 left-2 border-b-2 border-l-2" />
+                    <span className="crosshair-corner bottom-2 right-2 border-b-2 border-r-2" />
+
                     <div
                       className={`w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center shrink-0 border border-black/10 dark:border-white/15 transition-all duration-200 shadow-md ${
                         emblemShape === 'circle'
@@ -719,12 +815,12 @@ module.exports = {
                           : 'rounded-xl'
                       }`}
                       style={{
-                        backgroundColor: result.colors?.[0]?.hex || '#111111',
-                        color: result.colors?.[4]?.hex || '#FFFFFF',
+                        backgroundColor: emblemColors.bg,
+                        color: emblemColors.fg,
                       }}
                     >
                       <span
-                        className={`text-2xl sm:text-3xl font-bold tracking-tight select-none ${
+                        className={`text-2xl sm:text-3xl font-black tracking-tight select-none ${
                           emblemShape === 'diamond' ? '-rotate-45' : ''
                         }`}
                         style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
@@ -732,21 +828,14 @@ module.exports = {
                         {result.brandName ? result.brandName.substring(0, 2).toUpperCase() : 'AC'}
                       </span>
                     </div>
-                    <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400 mt-3">
-                      Mark Initials: {result.brandName ? result.brandName.substring(0, 2).toUpperCase() : 'AC'}
+
+                    <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 mt-3">
+                      STAGE // 200 x 200 PX VECTOR SPEC
                     </span>
                   </div>
 
-                  {/* Shape Switcher Segmented Control */}
-                  <div className="pt-2 border-t border-neutral-100 dark:border-[#202020]">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-mono uppercase text-neutral-500 dark:text-neutral-400">
-                        Silhouette Geometry
-                      </span>
-                      <span className="text-[10px] font-mono uppercase font-semibold text-blue-600">
-                        {emblemShape}
-                      </span>
-                    </div>
+                  {/* Silhouette & Color Mode Controls */}
+                  <div className="pt-2 border-t border-neutral-100 dark:border-[#202020] space-y-2">
                     <div className="grid grid-cols-3 gap-1 bg-[#F5F5F5] dark:bg-[#161616] p-1 rounded-md border border-[#E5E5E5] dark:border-[#262626]">
                       {['rounded', 'circle', 'diamond'].map((shape) => (
                         <button
@@ -762,43 +851,63 @@ module.exports = {
                         </button>
                       ))}
                     </div>
+
+                    <div className="grid grid-cols-3 gap-1 text-[10px] font-mono">
+                      {[
+                        { id: 'primary', label: 'Primary' },
+                        { id: 'inverted', label: 'Inverted' },
+                        { id: 'accent', label: 'Accent' },
+                      ].map((mode) => (
+                        <button
+                          key={mode.id}
+                          onClick={() => setEmblemColorMode(mode.id)}
+                          className={`py-1 px-1.5 rounded text-center transition-all ${
+                            emblemColorMode === mode.id
+                              ? 'bg-neutral-200 dark:bg-[#262626] text-neutral-900 dark:text-white font-medium'
+                              : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                          }`}
+                        >
+                          {mode.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 {/* Bento Card 3: 5-Tone Chromatic Scale with 1px border and role labels (Full Width / 12 cols) */}
-                <div className="col-span-12 bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-7 space-y-5 shadow-sm">
+                <div className="col-span-12 studio-card rounded-xl p-6 sm:p-7 space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100 dark:border-[#202020] pb-3">
                     <div>
                       <h3 className="text-sm font-semibold text-neutral-900 dark:text-white font-heading flex items-center gap-2">
                         <Palette className="w-3.5 h-3.5 text-blue-600" />
-                        <span>5-Tone Chromatic Scale</span>
+                        <span>5-Tone Chromatic Scale Hierarchy</span>
                       </h3>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                        Calibrated high-contrast palette tokens. Tap any swatch to copy.
+                        Calibrated high-contrast design tokens. Tap any swatch to copy hexadecimal value.
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button
                         onClick={copyAllPaletteHex}
-                        className="px-2.5 py-1 rounded bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-[10px] font-mono text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-colors"
+                        className="px-2.5 py-1 rounded bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-[10px] font-mono text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-colors shadow-sm"
                       >
                         Copy All Hex
                       </button>
                       <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 hidden sm:inline">
-                        WCAG AA
+                        WCAG AA PASS
                       </span>
                     </div>
                   </div>
 
-                  {/* 5-Tone Swatches Grid with 1px border (border-white/15 in dark mode) and clean labels below */}
+                  {/* 5-Tone Swatches Grid with 1px border and clean labels below */}
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
                     {result.colors?.map((color, idx) => (
                       <div key={idx} className="space-y-2 group">
                         <button
                           type="button"
                           onClick={() => copyToClipboard(color.hex)}
-                          className="w-full h-16 sm:h-20 rounded-lg border border-black/10 dark:border-white/15 relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm flex items-center justify-center cursor-pointer"
+                          className="w-full h-16 sm:h-24 rounded-lg border border-black/10 dark:border-white/15 relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm flex items-center justify-center cursor-pointer"
                           style={{ backgroundColor: color.hex }}
                           title={`Click to copy ${color.name} (${color.hex})`}
                         >
@@ -807,25 +916,32 @@ module.exports = {
                             <span>Copy</span>
                           </span>
                         </button>
-                        <div className="text-left">
+
+                        <div className="text-left space-y-0.5">
                           <div className="flex items-center justify-between">
                             <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-semibold truncate block">
-                              {SWATCH_ROLES[idx] || `Tone 0${idx + 1}`}
+                              {SWATCH_ROLES[idx]?.role || `Tone 0${idx + 1}`}
                             </span>
                             <span className="text-[9px] font-mono text-neutral-400 dark:text-neutral-500">
                               0{idx + 1}
                             </span>
                           </div>
+
                           <button
                             type="button"
                             onClick={() => copyToClipboard(color.hex)}
-                            className="text-xs font-mono font-semibold text-neutral-900 dark:text-neutral-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 mt-0.5"
+                            className="text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1"
                           >
                             <span>{color.hex}</span>
                           </button>
-                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+
+                          <p className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate">
                             {color.name}
                           </p>
+
+                          <span className="text-[9px] font-mono text-neutral-400 dark:text-neutral-500 block truncate">
+                            {SWATCH_ROLES[idx]?.desc}
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -834,17 +950,17 @@ module.exports = {
 
                 {/* Bento Card 4: Directive 01 // Logo Mark Directive (6 cols on desktop) */}
                 {result.logoConcept && (
-                  <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-7 space-y-3 shadow-sm">
+                  <div className="col-span-12 lg:col-span-6 studio-card rounded-xl p-6 sm:p-7 space-y-3">
                     <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#202020] pb-3">
                       <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wide flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Directive 01 // Logo Mark</span>
+                        <span>Directive 01 // Vector Logo Directive</span>
                       </span>
                       <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
                         Iconography
                       </span>
                     </div>
-                    <div className="p-3.5 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
+                    <div className="p-4 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
                       <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed font-sans">
                         {result.logoConcept}
                       </p>
@@ -853,17 +969,17 @@ module.exports = {
                 )}
 
                 {/* Bento Card 5: Directive 02 // Manifesto & Vibe (6 cols on desktop) */}
-                <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-7 space-y-3 shadow-sm">
+                <div className="col-span-12 lg:col-span-6 studio-card rounded-xl p-6 sm:p-7 space-y-3">
                   <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#202020] pb-3">
                     <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wide flex items-center gap-1.5">
                       <Type className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Directive 02 // Brand Manifesto</span>
+                      <span>Directive 02 // Brand Manifesto & Philosophy</span>
                     </span>
                     <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
-                      Philosophy
+                      Voice & Ethos
                     </span>
                   </div>
-                  <div className="p-3.5 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
+                  <div className="p-4 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020]">
                     <p
                       className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed"
                       style={{ fontFamily: `'${bodyFontFamily}', sans-serif` }}
@@ -878,14 +994,14 @@ module.exports = {
             {/* TAB 2: COLOR SYSTEM */}
             {activeTab === 'palette' && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <div className="studio-card rounded-xl p-6 sm:p-8 space-y-6">
                   <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#202020] pb-4">
                     <div>
                       <h3 className="text-base font-semibold text-neutral-900 dark:text-white font-heading">
-                        5-Tone Chromatic Hierarchy
+                        5-Tone Chromatic Hierarchy System
                       </h3>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                        High-contrast, production-calibrated color tokens.
+                        High-contrast, production-calibrated color tokens with exact RGB values.
                       </p>
                     </div>
                     <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
@@ -893,34 +1009,34 @@ module.exports = {
                     </span>
                   </div>
 
-                  {/* 5-Tone Vertical Cards */}
+                  {/* 5-Tone Detailed Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-5 gap-3.5">
                     {result.colors?.map((c, idx) => (
                       <div
                         key={idx}
-                        className="bg-[#FAFAFA] dark:bg-[#0E0E0E] p-3 rounded-lg border border-[#E5E5E5] dark:border-[#262626] flex sm:flex-col items-center gap-3 text-left sm:text-center group"
+                        className="bg-[#FAFAFA] dark:bg-[#0E0E0E] p-3.5 rounded-lg border border-[#E5E5E5] dark:border-[#262626] flex sm:flex-col items-center gap-3 text-left sm:text-center group"
                       >
                         <div
-                          className="w-14 h-14 sm:w-full sm:h-24 rounded border border-black/10 dark:border-white/15 shrink-0 shadow-sm"
+                          className="w-14 h-14 sm:w-full sm:h-28 rounded-lg border border-black/10 dark:border-white/15 shrink-0 shadow-sm"
                           style={{ backgroundColor: c.hex }}
                         />
                         <div className="flex-1 sm:w-full">
                           <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 block uppercase font-medium">
-                            {SWATCH_ROLES[idx] || `Tone 0${idx + 1}`}
+                            {SWATCH_ROLES[idx]?.role || `Tone 0${idx + 1}`}
                           </span>
-                          <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate mt-0.5">
+                          <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate mt-0.5">
                             {c.name}
                           </h4>
-                          <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 mt-1">
+                          <p className="text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300 mt-1">
                             {c.hex}
                           </p>
-                          <p className="text-[9px] font-mono text-neutral-400 dark:text-neutral-600 mt-0.5">
+                          <p className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 mt-0.5">
                             {hexToRgb(c.hex)}
                           </p>
                         </div>
                         <button
                           onClick={() => copyToClipboard(c.hex)}
-                          className="px-2.5 py-1 rounded bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-[10px] font-mono text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] transition-colors shrink-0"
+                          className="px-2.5 py-1 rounded bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] text-[10px] font-mono text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-[#383838] transition-colors shrink-0 shadow-sm"
                         >
                           Copy
                         </button>
@@ -934,7 +1050,7 @@ module.exports = {
             {/* TAB 3: TYPOGRAPHY */}
             {activeTab === 'typography' && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <div className="studio-card rounded-xl p-6 sm:p-8 space-y-6">
                   <div className="border-b border-neutral-100 dark:border-[#202020] pb-4">
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white font-heading">
                       Google Fonts Typographic Specimen
@@ -945,7 +1061,7 @@ module.exports = {
                   </div>
 
                   {/* Heading Font Card */}
-                  <div className="p-5 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-[#E5E5E5] dark:border-[#262626] space-y-3">
+                  <div className="p-6 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-[#E5E5E5] dark:border-[#262626] space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Primary Heading Font // {headingFontFamily}
@@ -956,7 +1072,7 @@ module.exports = {
                     </div>
 
                     <p
-                      className="text-2xl sm:text-4xl font-bold text-neutral-900 dark:text-white tracking-tight leading-tight"
+                      className="text-3xl sm:text-5xl font-extrabold text-neutral-900 dark:text-white tracking-tight leading-tight"
                       style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
                     >
                       {result.brandName}: Architectural Precision
@@ -968,18 +1084,18 @@ module.exports = {
                   </div>
 
                   {/* Body Font Card */}
-                  <div className="p-5 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-[#E5E5E5] dark:border-[#262626] space-y-3">
+                  <div className="p-6 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-[#E5E5E5] dark:border-[#262626] space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Body Font // {bodyFontFamily}
                       </span>
                       <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
-                        Interface & Prose
+                        Interface & Editorial Prose
                       </span>
                     </div>
 
                     <p
-                      className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal"
+                      className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal"
                       style={{ fontFamily: `'${bodyFontFamily}', sans-serif` }}
                     >
                       {result.vibeDescription}
@@ -990,7 +1106,7 @@ module.exports = {
                   {result.fontPairing?.rationale && (
                     <div className="p-4 rounded-lg bg-[#F5F5F5] dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#262626] space-y-1">
                       <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase">
-                        Typographic Rationale
+                        Typographic Pairing Rationale
                       </span>
                       <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
                         {result.fontPairing.rationale}
@@ -1001,28 +1117,30 @@ module.exports = {
               </div>
             )}
 
-            {/* TAB 4: MOCKUPS */}
+            {/* TAB 4: MOCKUPS (EXPANDED WORLD-CLASS SUITE) */}
             {activeTab === 'mockups' && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <div className="studio-card rounded-xl p-6 sm:p-8 space-y-6">
                   <div className="border-b border-neutral-100 dark:border-[#202020] pb-4">
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white font-heading">
-                      Brand Collateral Specimen
+                      Brand Collateral Specimen Suite
                     </h3>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                      High-contrast Swiss stationery preview (Aspect Ratio 3.5:2).
+                      Realistic studio touchpoints: Stationery, App Icon, and Social Media Share Card.
                     </p>
                   </div>
 
-                  {/* Business Card Front & Back */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Front Card */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase block">
-                        Stationery Front // Minimalist Mark
-                      </span>
+                  {/* 1. Swiss Business Card Front & Back */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-mono uppercase text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Collateral 01 // Luxury Debossed Business Card</span>
+                    </span>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Front Card */}
                       <div
-                        className="w-full aspect-[3.5/2] rounded-xl p-6 border border-black/10 dark:border-[#262626] flex flex-col justify-between shadow-card relative overflow-hidden"
+                        className="w-full aspect-[3.5/2] rounded-xl p-6 border border-black/10 dark:border-[#262626] flex flex-col justify-between shadow-xl relative overflow-hidden"
                         style={{
                           backgroundColor: result.colors?.[0]?.hex || '#0A0A0A',
                           color: result.colors?.[4]?.hex || '#FFFFFF',
@@ -1030,7 +1148,7 @@ module.exports = {
                       >
                         <div className="flex items-center justify-between">
                           <div
-                            className="w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs"
+                            className="w-9 h-9 rounded-md flex items-center justify-center font-bold text-xs shadow"
                             style={{
                               backgroundColor: result.colors?.[1]?.hex || '#2563EB',
                               color: '#FFFFFF',
@@ -1039,31 +1157,26 @@ module.exports = {
                             {result.brandName?.charAt(0) || 'A'}
                           </div>
                           <span className="text-[10px] font-mono opacity-60">
-                            SPEC 01
+                            EDITION 2026
                           </span>
                         </div>
 
                         <div>
                           <h4
-                            className="text-2xl font-bold tracking-tight"
+                            className="text-2xl sm:text-3xl font-extrabold tracking-tight"
                             style={{ fontFamily: `'${headingFontFamily}', sans-serif` }}
                           >
                             {result.brandName}
                           </h4>
-                          <p className="text-xs opacity-75 mt-0.5">
+                          <p className="text-xs opacity-80 mt-0.5 font-normal">
                             {result.slogan}
                           </p>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Back Card */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase block">
-                        Stationery Back // Editorial Contact
-                      </span>
+                      {/* Back Card */}
                       <div
-                        className="w-full aspect-[3.5/2] rounded-xl p-6 border border-black/10 dark:border-[#262626] flex flex-col justify-between shadow-card"
+                        className="w-full aspect-[3.5/2] rounded-xl p-6 border border-black/10 dark:border-[#262626] flex flex-col justify-between shadow-xl relative"
                         style={{
                           backgroundColor: result.colors?.[3]?.hex || '#141414',
                           color: result.colors?.[4]?.hex || '#FFFFFF',
@@ -1086,6 +1199,66 @@ module.exports = {
                           <p>+1 (800) 248-7238</p>
                           <p>Zurich // San Francisco // Tokyo</p>
                         </div>
+
+                        {/* Chromatic Accent Stripes */}
+                        <div className="flex h-1 rounded-full overflow-hidden w-full opacity-70">
+                          {result.colors?.map((c, i) => (
+                            <div key={i} className="flex-1" style={{ backgroundColor: c.hex }} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Digital App Icon & Favicon Preview */}
+                  <div className="pt-4 border-t border-neutral-100 dark:border-[#202020] space-y-3">
+                    <span className="text-xs font-mono uppercase text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span>Collateral 02 // iOS / macOS Application Icon & Favicon</span>
+                    </span>
+
+                    <div className="p-6 rounded-lg bg-[#FAFAFA] dark:bg-[#0E0E0E] border border-neutral-100 dark:border-[#202020] flex flex-wrap items-center gap-8">
+                      {/* App Icon 128px */}
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center font-bold text-2xl border border-black/10 dark:border-white/15"
+                          style={{
+                            backgroundColor: result.colors?.[0]?.hex || '#111111',
+                            color: result.colors?.[4]?.hex || '#FFFFFF',
+                            fontFamily: `'${headingFontFamily}', sans-serif`,
+                          }}
+                        >
+                          {result.brandName ? result.brandName.substring(0, 2).toUpperCase() : 'AC'}
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold block text-neutral-800 dark:text-neutral-200">
+                            {result.brandName}
+                          </span>
+                          <span className="text-[10px] font-mono text-neutral-400 block">
+                            App Store Icon // 512 x 512
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Small Favicon */}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-lg shadow flex items-center justify-center font-bold text-xs border border-black/10 dark:border-white/15"
+                          style={{
+                            backgroundColor: result.colors?.[1]?.hex || '#2563EB',
+                            color: '#FFFFFF',
+                          }}
+                        >
+                          {result.brandName?.charAt(0) || 'A'}
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold block text-neutral-800 dark:text-neutral-200">
+                            Browser Favicon
+                          </span>
+                          <span className="text-[10px] font-mono text-neutral-400 block">
+                            Tab Icon // 32 x 32
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1096,7 +1269,7 @@ module.exports = {
             {/* TAB 5: EXPORT TOKENS */}
             {activeTab === 'export' && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-[#141414] border border-[#E5E5E5] dark:border-[#262626] rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <div className="studio-card rounded-xl p-6 sm:p-8 space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 dark:border-[#202020] pb-4">
                     <div>
                       <h3 className="text-base font-semibold text-neutral-900 dark:text-white font-heading">
@@ -1112,7 +1285,8 @@ module.exports = {
                       {[
                         { id: 'tailwind', label: 'Tailwind' },
                         { id: 'css', label: 'CSS Vars' },
-                        { id: 'json', label: 'JSON' },
+                        { id: 'json', label: 'JSON Tokens' },
+                        { id: 'svg', label: 'SVG Mark' },
                       ].map((fmt) => (
                         <button
                           key={fmt.id}
@@ -1138,6 +1312,7 @@ module.exports = {
                           {exportFormat === 'tailwind' && 'tailwind.config.js'}
                           {exportFormat === 'css' && 'globals.css (:root)'}
                           {exportFormat === 'json' && 'tokens.json (W3C Format)'}
+                          {exportFormat === 'svg' && 'monogram-mark.svg'}
                         </span>
                       </span>
 
@@ -1148,8 +1323,10 @@ module.exports = {
                               ? getTailwindSnippet(result)
                               : exportFormat === 'css'
                               ? getCssVarsSnippet(result)
+                              : exportFormat === 'svg'
+                              ? getSvgSnippet(result)
                               : JSON.stringify(result, null, 2);
-                          copyToClipboard(content, `${exportFormat.toUpperCase()} tokens copied!`);
+                          copyToClipboard(content, `${exportFormat.toUpperCase()} exported!`);
                         }}
                         className="px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                       >
@@ -1162,6 +1339,7 @@ module.exports = {
                       {exportFormat === 'tailwind' && getTailwindSnippet(result)}
                       {exportFormat === 'css' && getCssVarsSnippet(result)}
                       {exportFormat === 'json' && JSON.stringify(result, null, 2)}
+                      {exportFormat === 'svg' && getSvgSnippet(result)}
                     </pre>
                   </div>
                 </div>
@@ -1172,7 +1350,7 @@ module.exports = {
       </main>
 
       {/* Swiss Editorial Studio Footer */}
-      <footer className="border-t border-[#E5E5E5] dark:border-[#262626] bg-[#FAFAFA] dark:bg-[#0A0A0A] py-8 mt-16 transition-colors duration-200">
+      <footer className="border-t border-[#E5E5E5] dark:border-[#222222] bg-[#FAFAFA] dark:bg-[#0A0A0A] py-8 mt-16 transition-colors duration-200 z-10 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 font-mono">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-600" />

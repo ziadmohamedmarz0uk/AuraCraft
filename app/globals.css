@@ -18,7 +18,7 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Light / Dark Mode Body defaults */
@@ -32,17 +32,33 @@ html:not(.dark) body {
   color: #111111;
 }
 
+/* Architectural Studio Dot Grid */
+.studio-grid {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+html.dark .studio-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Subtle mask fade for the grid */
+.grid-mask {
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 10%, #000 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 10%, #000 60%, transparent 100%);
+}
+
 /* Minimalist studio scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 html.dark ::-webkit-scrollbar-track {
   background: #0A0A0A;
 }
 html.dark ::-webkit-scrollbar-thumb {
   background: #262626;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 html.dark ::-webkit-scrollbar-thumb:hover {
   background: #383838;
@@ -52,11 +68,11 @@ html:not(.dark) ::-webkit-scrollbar-track {
   background: #FAFAFA;
 }
 html:not(.dark) ::-webkit-scrollbar-thumb {
-  background: #D4D4D8;
-  border-radius: 3px;
+  background: #E0E0E0;
+  border-radius: 4px;
 }
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: #A1A1AA;
+  background: #BDBDBD;
 }
 
 /* Hide scrollbar for horizontal chips */
@@ -68,37 +84,42 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   display: none;
 }
 
-/* Studio cards & surface utilities (Swiss / Linear / Raycast style) */
+/* Precision studio card with subtle hairline top highlight */
 .studio-card {
   background-color: #FFFFFF;
   border: 1px solid #E5E5E5;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
 }
 html.dark .studio-card {
-  background-color: #141414;
-  border: 1px solid #262626;
+  background-color: #121212;
+  border: 1px solid #222222;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
 }
 
-.studio-card-hover {
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+.studio-card-interactive {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-html:not(.dark) .studio-card-hover:hover {
-  border-color: #D4D4D4;
-  background-color: #FBFBFB;
+html:not(.dark) .studio-card-interactive:hover {
+  border-color: #D4D4D8;
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.06);
 }
-html.dark .studio-card-hover:hover {
-  border-color: #383838;
-  background-color: #181818;
+html.dark .studio-card-interactive:hover {
+  border-color: #333333;
+  background-color: #151515;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.8);
 }
 
+/* Studio input console */
 .studio-input {
   background-color: #FAFAFA;
   border: 1px solid #E5E5E5;
   color: #111111;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.15s ease;
 }
 html.dark .studio-input {
-  background-color: #0E0E0E;
-  border: 1px solid #262626;
+  background-color: #0C0C0C;
+  border: 1px solid #222222;
   color: #EDEDED;
 }
 .studio-input:focus {
@@ -110,5 +131,14 @@ html.dark .studio-input {
 /* Headings with tight Swiss tracking */
 h1, h2, h3, h4, .font-heading {
   font-family: var(--font-heading);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+}
+
+/* Drafting Crosshairs for Monogram stage */
+.crosshair-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: currentColor;
+  opacity: 0.25;
 }
